@@ -1,6 +1,6 @@
 {
   "name": "ydbcompany",
-  "homepage": "http://hanlee-311/github.io/ydbcompany/",
+  "homepage": "https://hanlee-311.github.io/ydbcompany/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,8 +13,12 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.4",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
