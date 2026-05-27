@@ -35,7 +35,7 @@ const initDatabase = async () => {
         console.log('✅ Database initialized with the "types" table.');
     } catch (err) {
         console.error('Error initializing database:', err);
-        process.exit(1);  
+        process.exit(1);
     }
 };
 
@@ -44,8 +44,8 @@ initDatabase();
 app.get('/api/types', async (req, res) => {
     try {
         const db = await openDB();
-        const types = await db.all('SELECT * FROM types'); 
-        res.json(types); 
+        const types = await db.all('SELECT * FROM types');
+        res.json(types);
     } catch (err) {
         console.error('Error fetching types:', err);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -61,7 +61,7 @@ app.post('/api/types', async (req, res) => {
 
     try {
         const db = await openDB();
-        await db.run('INSERT INTO types (type) VALUES (?)', [type]);  
+        await db.run('INSERT INTO types (type) VALUES (?)', [type]);
         res.status(201).json({ message: 'Type added successfully' });
     } catch (err) {
         console.error('Error adding type:', err);
@@ -69,6 +69,32 @@ app.post('/api/types', async (req, res) => {
     }
 });
 
+app.put('/api/types', async (req, res) => {
+    const { id, type } = req.body;
+
+    if (!id || !type) {
+        return res.status(400).json({ error: 'ID and type are required' });
+    }
+
+    try {
+        const db = await openDB();
+
+        const result = await db.run(
+            'UPDATE types SET type = ? WHERE id = ?',
+            [type, id]
+        );
+
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Type not found' });
+        }
+
+        return res.json({ message: 'Type updated successfully' });
+    } catch (err) {
+        console.error('Error updating type:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`✅ Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

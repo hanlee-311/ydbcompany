@@ -1,52 +1,152 @@
-// src/components/Home.jsx
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const Home = () => {
-  const [types, setTypes] = useState([]);  // State to hold the fetched types
-  const [loading, setLoading] = useState(true);  // State to manage loading state
-  const [error, setError] = useState(null);  // State for handling any error during fetch
+    const [types, setTypes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [newType, setNewType] = useState('');
+    const [message, setMessage] = useState('');
+    const [editId, setEditId] = useState(null);
 
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchTypes = async () => {
-      try {
-        const response = await axios.get('/api/types');  // Fetch data from your backend API
-        setTypes(response.data);  // Store the fetched data in state
-      } catch (err) {
-        setError('Failed to fetch data');  // Set error state if the API call fails
-      } finally {
-        setLoading(false);  // Stop loading indicator
-      }
+    useEffect(() => {
+        const fetchTypes = async () => {
+            try {
+                const response = await axios.get('/api/types');
+                setTypes(response.data);
+            } catch (err) {
+                setError('Failed to fetch data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTypes();
+    }, []);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!newType.trim()) {
+            setMessage('Please enter a type');
+            return;
+        }
+
+        try {
+            // 🔥 If editing an existing type
+            if (editId !== null) {
+                const response = await fetch('/api/types', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: editId,
+                        type: newType
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Update list locally
+                    setTypes(types.map(t =>
+                        t.id === editId ? { ...t, type: newType } : t
+                    ));
+
+                    setMessage(`Type updated to "${newType}"`);
+                } else {
+                    setMessage(result.error || 'Update failed');
+                }
+
+                setEditId(null);
+                setNewType('');
+                return;
+            }
+
+            // 🔥 If adding a new type
+            const response = await fetch('/api/types', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ type: newType }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setTypes([...types, result]);
+                setNewType('');
+                setMessage(`Type "${newType}" added successfully!`);
+            } else {
+                setMessage(result.error || 'Something went wrong');
+            }
+        } catch (error) {
+            setMessage('Error: ' + error.message);
+        }
     };
 
-    fetchTypes();
-  }, []);  // Empty dependency array ensures the effect runs only once when the component mounts
+    return (
+        <div>
+            <h1>Manage Types</h1>
 
-  // If still loading, show a loading message
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+            <form onSubmit={handleSubmit}>
+                <label htmlFor="type">Type:</label>
 
-  // If there was an error fetching data, show the error message
-  if (error) {
-    return <div>{error}</div>;
-  }
+                <input
+                    type="text"
+                    id="type"
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                />
 
-  // Render the fetched data
-  return (
-    <div>
-      <h1>Types List</h1>
-      <ul>
-        {types.map((type) => (
-          <li key={type.id}>
-            {type.type} {/* Render the 'type' field from the database */}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+                <button type="submit">
+                    {editId ? 'Update Type' : 'Add Type'}
+                </button>
+
+                {editId && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setEditId(null);
+                            setNewType('');
+                        }}
+                        style={{ marginLeft: '10px' }}
+                    >
+                        Cancel
+                    </button>
+                )}
+            </form>
+
+            {message && <p>{message}</p>}
+
+            <h2>Existing Types</h2>
+
+            <ul>
+                {types.length > 0 ? (
+                    types.map((type) => (
+                        <li
+                            key={type.id}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                setEditId(type.id);
+                                setNewType(type.type);
+                                setMessage(`Editing "${type.type}"...`);
+                            }}
+                        >
+                            {type.type}
+                        </li>
+                    ))
+                ) : (
+                    <p>No types available</p>
+                )}
+            </ul>
+        </div>
+    );
 };
 
 export default Home;
