@@ -90,6 +90,29 @@ const Home = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch('/api/types', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setTypes(types.filter(type => type.id !== id));
+                setMessage('Type deleted successfully');
+            } else {
+                setMessage(result.error || 'Delete failed');
+            }
+        } catch (error) {
+            setMessage('Error: ' + error.message);
+        }
+    };
+
     return (
         <div>
             <h1>Manage Types</h1>
@@ -132,13 +155,23 @@ const Home = () => {
                         <li
                             key={type.id}
                             style={{ cursor: 'pointer' }}
-                            onClick={() => {
-                                setEditId(type.id);
-                                setNewType(type.type);
-                                setMessage(`Editing "${type.type}"...`);
-                            }}
                         >
-                            {type.type}
+                            <span
+                                onClick={() => {
+                                    setEditId(type.id);
+                                    setNewType(type.type);
+                                    setMessage(`Editing "${type.type}"...`);
+                                }}
+                            >
+                                {type.type}
+                            </span>
+
+                            <button
+                                style={{ marginLeft: '10px' }}
+                                onClick={() => handleDelete(type.id)}
+                            >
+                                Delete
+                            </button>
                         </li>
                     ))
                 ) : (

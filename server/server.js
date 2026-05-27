@@ -95,6 +95,32 @@ app.put('/api/types', async (req, res) => {
     }
 });
 
+app.delete('/api/types', async (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ error: 'ID is required' });
+    }
+
+    try {
+        const db = await openDB();
+
+        const result = await db.run(
+            'DELETE FROM types WHERE id = ?',
+            [id]
+        );
+
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Type not found' });
+        }
+
+        return res.json({ message: 'Type deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting type:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
