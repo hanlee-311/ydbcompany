@@ -5,10 +5,10 @@ function Footer() {
 
     return (
         <>
-        <Wrapper>
-            <p>hello@yellowdogbread.com</p>
-            <p>©Yellow Dog Bread Company | Website by Hannah Lee</p>
-        </Wrapper>
+            <Wrapper>
+                <p>hello@yellowdogbread.com</p>
+                <p>©Yellow Dog Bread Company | Website by Hannah Lee</p>
+            </Wrapper>
         </>
     );
 };
