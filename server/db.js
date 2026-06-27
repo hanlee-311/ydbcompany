@@ -1,9 +1,14 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
 
-export async function openDB() {
-  return open({
-    filename: './server/database.db', 
-    driver: sqlite3.Database
-  });
-};
+let db;
+
+export async function getDB() {
+  if (!db) {
+    db = await open({
+      filename: "./server/database.db",
+      driver: sqlite3.Database
+    });
+  }
+  return db;
+}
